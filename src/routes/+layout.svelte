@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { children } = $props();
+	let { data, children } = $props();
 </script>
 
 <svelte:head>
@@ -8,8 +8,16 @@
 
 <header>
 	<a class="brand" href="/">Online Clipboard</a>
-	<!-- The auth part adds "Log in" / email + "Log out" here. -->
-	<nav></nav>
+	<nav>
+		{#if data.user}
+			<span class="muted email">{data.user.email}</span>
+			<form method="POST" action="/logout">
+				<button type="submit" class="secondary">Log out</button>
+			</form>
+		{:else}
+			<a href="/login">Log in</a>
+		{/if}
+	</nav>
 </header>
 
 <main>
@@ -112,6 +120,12 @@
 		gap: 0.75rem;
 		margin-left: auto;
 		text-align: right;
+	}
+	.email {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	main {
 		max-width: 40rem;
