@@ -1,7 +1,31 @@
 import { fail } from '@sveltejs/kit';
-import { ClipValidationError, createClip, resolveTtl } from '$lib/server/clips';
+import { normalizeCode } from '$lib/code';
+import {
+	ANON_TTL,
+	ClipValidationError,
+	USER_MAX_TTL,
+	createClip,
+	deleteClip,
+	listClips,
+	resolveTtl
+} from '$lib/server/clips';
 import { limit } from '$lib/server/ratelimit';
-import type { Actions } from './$types';
+import type { Actions, PageServerLoad } from './$types';
+
+// Passed to the page so it never hard-codes the TTL values.
+const ttl = {
+	options: [
+		{ ms: ANON_TTL, label: '1 hour' },
+		{ ms: USER_MAX_TTL, label: '1 day' }
+	],
+	default: USER_MAX_TTL
+};
+
+export const load: PageServerLoad = async ({ locals, setHeaders }) => {
+	if (!locals.user) return { clips: [], ttl };
+	setHeaders({ 'cache-control': 'private, no-store' });
+	return { clips: await listClips(locals.user.id), ttl };
+};
 
 export const actions: Actions = {
 	create: async (event) => {
@@ -27,5 +51,16 @@ export const actions: Actions = {
 			}
 			throw err;
 		}
+	},
+
+	delete: async ({ request, locals }) => {
+		if (!locals.user) return fail(401, { deleteError: 'Log in to delete clips' });
+
+		const raw = (await request.formData()).get('code');
+		const code = normalizeCode(typeof raw === 'string' ? raw : '');
+		if (code.length !== 8) return fail(400, { deleteError: 'Codes are 8 digits' });
+
+		await deleteClip(locals.user.id, code);
+		return { deleted: code };
 	}
 };
