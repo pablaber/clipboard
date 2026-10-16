@@ -18,7 +18,14 @@ npm run dev       # vite dev server (rate limiting is a no-op here)
 npm run preview   # build + wrangler dev, emulates the LIMITER binding and Worker env
 ```
 
-Apply `supabase/migrations/0001_clips.sql` to your Supabase project (SQL editor or `supabase db push`).
+Apply the migration to your Supabase project (this records migration history):
+
+```sh
+npx supabase link --project-ref <ref>
+npx supabase db push
+```
+
+Fallback: paste `supabase/migrations/0001_clips.sql` into the Supabase SQL editor.
 
 Other scripts: `npm run check` (svelte-check), `npm test` (vitest).
 
