@@ -28,7 +28,7 @@ Releases are driven by Release Please and Conventional Commits. Merging the gene
 
 1. Open a pull request from a `<type>/<short-description>` branch with a title of the form `<type>: <lowercase subject>` and no scope. `.github/workflows/pr-validate.yml` rejects anything else. Allowed types: `chore`, `docs`, `feat`, `fix`, `vuln`, `misc`, `ignore`.
 2. Squash merge it, with the repository set so the squash commit takes the PR title as its subject (Release Please parses that).
-3. The push to `main` runs `.github/workflows/release-please.yml`, which opens or updates a release PR titled like `chore(main): release 0.2.0`. Nothing is deployed yet.
+3. The push to `main` runs `.github/workflows/release-please.yml`, which opens or updates a release PR titled like `chore(main): release 0.1.0`. Nothing is deployed yet.
 4. Check that `package.json` and `.release-please-manifest.json` moved to the expected version and the changelog reads correctly. Never hand-edit the release PR.
 5. Merge the release PR. That is the only gate on the production job.
 
