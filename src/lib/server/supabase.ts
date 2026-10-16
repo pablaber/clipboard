@@ -13,6 +13,22 @@ function config() {
 	return { url: SUPABASE_URL, key: SUPABASE_SECRET_KEY };
 }
 
+// Cache headers @supabase/ssr wants on responses that write auth cookies. We don't use
+// `event.setHeaders` for these: it throws if a header is already set, and setAll can run more than
+// once per request or alongside a route's own `cache-control`. They're applied in the hook instead.
+const pendingHeaders = new WeakMap<RequestEvent, Record<string, string>>();
+
+/** Add the collected auth cache headers to the response, without overriding headers it already has. */
+export function applyAuthHeaders(event: RequestEvent, response: Response) {
+	for (const [name, value] of Object.entries(pendingHeaders.get(event) ?? {})) {
+		try {
+			if (!response.headers.has(name)) response.headers.set(name, value);
+		} catch {
+			// immutable headers (e.g. a proxied fetch response): skip
+		}
+	}
+}
+
 /**
  * Per-request client that stores the session in cookies. Uses the secret key so that
  * `Sb-Forwarded-For` is honoured and Supabase Auth rate-limits per end user, not per Worker egress IP.
@@ -27,7 +43,7 @@ export function createAuthClient(event: RequestEvent) {
 				for (const { name, value, options } of cookies) {
 					event.cookies.set(name, value, { ...options, path: '/' });
 				}
-				if (Object.keys(headers).length > 0) event.setHeaders(headers);
+				pendingHeaders.set(event, { ...pendingHeaders.get(event), ...headers });
 			}
 		}
 	});

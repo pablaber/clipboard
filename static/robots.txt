@@ -1,3 +1,4 @@
-# allow crawling everything by default
+# Clip pages (/12345678) must never be indexed; only the home page may be.
 User-agent: *
-Disallow:
+Allow: /$
+Disallow: /
