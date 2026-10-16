@@ -7,7 +7,8 @@ export const load: PageServerLoad = () => {
 
 export const actions: Actions = {
 	default: async ({ locals }) => {
-		await locals.auth.auth.signOut();
+		// 'local' only ends this session; the default 'global' would log the user out on every machine.
+		await locals.auth.auth.signOut({ scope: 'local' });
 		redirect(303, '/');
 	}
 };
