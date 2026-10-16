@@ -22,13 +22,43 @@ See [Supabase](#supabase) for applying the migration and the auth config.
 
 Other scripts: `npm run check` (svelte-check), `npm test` (vitest).
 
-## Deploy
+## Releasing to production
 
-```sh
-# set SUPABASE_URL in wrangler.jsonc vars first
-npx wrangler secret put SUPABASE_SECRET_KEY
-npm run deploy    # npm run build && wrangler deploy
-```
+Releases are driven by Release Please and Conventional Commits. Merging the generated release pull request is the only supported way to deploy. There is no deploy script: never run `wrangler deploy`, `wrangler secret put`, or create a tag by hand.
+
+1. Open a pull request from a `<type>/<short-description>` branch with a title of the form `<type>: <lowercase subject>` and no scope. `.github/workflows/pr-validate.yml` rejects anything else. Allowed types: `chore`, `docs`, `feat`, `fix`, `vuln`, `misc`, `ignore`.
+2. Squash merge it, with the repository set so the squash commit takes the PR title as its subject (Release Please parses that).
+3. The push to `main` runs `.github/workflows/release-please.yml`, which opens or updates a release PR titled like `chore(main): release 0.2.0`. Nothing is deployed yet.
+4. Check that `package.json` and `.release-please-manifest.json` moved to the expected version and the changelog reads correctly. Never hand-edit the release PR.
+5. Merge the release PR. That is the only gate on the production job.
+
+The production job, in order: links the Supabase project (failing if the committed `[remotes.production].project_id` differs from `SUPABASE_PROJECT_REF`); previews and applies migrations with `supabase db push`; pushes the hosted auth config with `supabase config push --yes` (failing if `config.toml` changes during the push or the output contains `localhost`); builds; deploys the Worker to `PRODUCTION_HOSTNAME` with `cloudflare/wrangler-action`, uploading `SUPABASE_URL` and `SUPABASE_SECRET_KEY` as encrypted Worker bindings; then fetches `/` and `/login` and requires a success.
+
+If the job fails because a variable or secret was missing or wrong, fix only that setting and rerun the failed job. If code, a migration or `config.toml` must change, open a normal `fix:` PR and let Release Please cut the next patch.
+
+### Required repository configuration
+
+Pull requests run `.github/workflows/ci.yml` (tests, `svelte-check`, build) and the title check, which need no configuration.
+
+| Variable                    | Purpose                                                       |
+| --------------------------- | ------------------------------------------------------------- |
+| `RELEASE_PLEASE_APP_ID`     | GitHub App that lets the release PR trigger CI and validation |
+| `SUPABASE_PROJECT_REF`      | Project to link; must match `[remotes.production].project_id` |
+| `SUPABASE_URL`              | Hosted project URL, uploaded as a Worker binding              |
+| `CLOUDFLARE_ACCOUNT_ID`     | Account that owns the Worker                                  |
+| `PRODUCTION_HOSTNAME`       | Custom domain, for example `clip.example.com` (no scheme)     |
+| `SUPABASE_SMTP_ADMIN_EMAIL` | Sender address on the domain verified in Resend               |
+
+| Secret                          | Purpose                                                   |
+| ------------------------------- | --------------------------------------------------------- |
+| `RELEASE_PLEASE_APP_PRIVATE_KEY`| Private key for the GitHub App                            |
+| `SUPABASE_ACCESS_TOKEN`         | Supabase CLI token for link, `db push` and `config push`  |
+| `SUPABASE_DB_PASSWORD`          | Hosted database password for `db push`                    |
+| `SUPABASE_SECRET_KEY`           | `sb_secret_...` key, uploaded as a Worker binding         |
+| `CLOUDFLARE_API_TOKEN`          | Token allowed to deploy Workers and attach the hostname   |
+| `RESEND_API_KEY`                | Sending-only Resend key for Supabase Auth SMTP            |
+
+Store these as repository variables and secrets; do not paste them into the Supabase or Cloudflare dashboards.
 
 ## Supabase
 
@@ -43,6 +73,8 @@ npm run db:push        # applies supabase/migrations
 Fallback for the migration: paste `supabase/migrations/0001_clips.sql` into the SQL editor.
 
 ### Auth config
+
+The release job pushes this config automatically (see [Releasing to production](#releasing-to-production)). The manual `config:push` below is for local use and the first-time setup.
 
 The root tables of `config.toml` are the local profile (`http://localhost:5173`, 6-digit email OTP valid for 1 hour, code-only email from `supabase/templates/login_code.html`). `[remotes.production]` overrides only what differs on the hosted project: site URL, a 30-emails-per-hour rate limit, and Resend SMTP. When linked to that ref, `config:push` deep-merges the override over the root and pushes the result:
 
