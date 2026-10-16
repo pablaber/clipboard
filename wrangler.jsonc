@@ -7,6 +7,7 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
+	"dev": { "port": 8310 },
 	"ratelimits": [
 		{
 			"name": "LIMITER",

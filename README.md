@@ -18,6 +18,8 @@ npm run dev       # vite dev server (rate limiting is a no-op here)
 npm run preview   # build + wrangler dev, emulates the LIMITER binding and Worker env
 ```
 
+Dev runs on http://localhost:5310, preview on http://localhost:8310, and the local Supabase stack on 553xx; all fail loudly if a port is taken.
+
 See [Supabase](#supabase) for applying the migration and the auth config.
 
 Other scripts: `npm run check` (svelte-check), `npm test` (vitest).
@@ -76,7 +78,7 @@ Fallback for the migration: paste `supabase/migrations/0001_clips.sql` into the 
 
 The release job pushes this config automatically (see [Releasing to production](#releasing-to-production)). The manual `config:push` below is for local use and the first-time setup.
 
-The root tables of `config.toml` are the local profile (`http://localhost:5173`, 6-digit email OTP valid for 1 hour, code-only email from `supabase/templates/login_code.html`). `[remotes.production]` overrides only what differs on the hosted project: site URL, a 30-emails-per-hour rate limit, and Resend SMTP. When linked to that ref, `config:push` deep-merges the override over the root and pushes the result:
+The root tables of `config.toml` are the local profile (`http://localhost:5310`, 6-digit email OTP valid for 1 hour, code-only email from `supabase/templates/login_code.html`). `[remotes.production]` overrides only what differs on the hosted project: site URL, a 30-emails-per-hour rate limit, and Resend SMTP. When linked to that ref, `config:push` deep-merges the override over the root and pushes the result:
 
 ```sh
 RESEND_API_KEY=... SUPABASE_SMTP_ADMIN_EMAIL=login@<domain> SUPABASE_AUTH_SITE_URL=https://<host> npm run config:push
