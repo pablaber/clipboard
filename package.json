@@ -10,6 +10,10 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"test": "vitest run",
+		"app:bootstrap": "node scripts/free-supabase-ports.mjs && supabase start --ignore-health-check -x realtime,studio,edge-runtime,logflare,vector,supavisor,imgproxy,storage-api,postgres-meta && supabase status --output env --override-name api.url=SUPABASE_URL --override-name auth.secret_key=SUPABASE_SECRET_KEY | node scripts/write-local-supabase-env.mjs",
+		"db:start": "node scripts/free-supabase-ports.mjs && supabase db start",
+		"db:reset": "supabase db reset",
+		"db:stop": "supabase stop",
 		"db:push": "supabase db push",
 		"config:push": "supabase config push"
 	},
