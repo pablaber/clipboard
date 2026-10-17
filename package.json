@@ -10,13 +10,15 @@
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"test": "vitest run",
-		"deploy": "npm run build && wrangler deploy"
+		"db:push": "supabase db push",
+		"config:push": "supabase config push"
 	},
 	"devDependencies": {
 		"@cloudflare/workers-types": "^5.20261016.1",
 		"@sveltejs/adapter-cloudflare": "^7.2.9",
 		"@sveltejs/kit": "^2.70.3",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"supabase": "^2.121.0",
 		"svelte": "^5.57.1",
 		"svelte-check": "^4.6.0",
 		"typescript": "^6.0.3",

@@ -7,14 +7,12 @@
 		"binding": "ASSETS",
 		"directory": ".svelte-kit/cloudflare"
 	},
+	"dev": { "port": 8310 },
 	"ratelimits": [
 		{
 			"name": "LIMITER",
 			"namespace_id": "1001",
 			"simple": { "limit": 20, "period": 60 }
 		}
-	],
-	"vars": {
-		"SUPABASE_URL": "https://YOUR-PROJECT-REF.supabase.co"
-	}
+	]
 }
