@@ -8,19 +8,30 @@ See [docs/design.md](docs/design.md) for the design and plan.
 
 ## Local development
 
+Development runs against a local Supabase stack in Docker (Postgres, Auth, and Mailpit for login emails).
+
 ```sh
 npm install
-cp .env.example .env              # used by `npm run dev` (vite dev)
-cp .dev.vars.example .dev.vars    # used by `npm run preview` (wrangler dev)
-# fill in SUPABASE_URL and SUPABASE_SECRET_KEY in both files (use a dev Supabase project)
-
-npm run dev       # vite dev server (rate limiting is a no-op here)
-npm run preview   # build + wrangler dev, emulates the LIMITER binding and Worker env
+npm run app:bootstrap   # starts the stack and writes .env and .dev.vars
+npm run dev             # vite dev server on http://localhost:5310 (rate limiting is a no-op here)
+npm run preview         # build + wrangler dev on http://localhost:8310, emulates the LIMITER binding
 ```
 
-Dev runs on http://localhost:5310, preview on http://localhost:8310, and the local Supabase stack on 553xx; all fail loudly if a port is taken.
+Dev runs on port 5310, preview on 8310, and the local Supabase stack on 553xx; all fail loudly if a port is taken. The seed adds a demo clip, so http://localhost:5310/12345678 works right away.
 
-See [Supabase](#supabase) for applying the migration and the auth config.
+Login codes are not emailed: open Mailpit at http://127.0.0.1:55324 and read the 6-digit code there.
+
+To point at a hosted Supabase project instead, skip `app:bootstrap` and copy `.env.example` to `.env` and `.dev.vars.example` to `.dev.vars`, then fill in `SUPABASE_URL` and `SUPABASE_SECRET_KEY`.
+
+### Local database
+
+- `npm run app:bootstrap` is safe to rerun. It reuses a healthy stack and only rewrites the generated `.env` and `.dev.vars` (mode 0600, gitignored).
+- `npm run db:reset` destroys the local database, replays `supabase/migrations/`, and applies `supabase/seed.sql`.
+- `npm run db:start` starts only Postgres. `npm run db:stop` stops the whole stack.
+- `app:bootstrap` starts a trimmed stack with `supabase start -x ...`, excluding Realtime, Studio, Edge Runtime, Logflare, Vector, Supavisor, imgproxy, Storage and postgres-meta. It keeps only what the app needs (Postgres, Auth, PostgREST, Kong and Mailpit), because the full stack can exhaust a small Docker VM's memory and make Auth time out when sending login codes. `config.toml` is untouched so it keeps matching the hosted project.
+- `app:bootstrap` and `db:start` first run `scripts/free-supabase-ports.mjs`, which stops leftover `supabase_*` containers from other Supabase projects that are bound to this project's 553xx ports. It never touches containers on other ports, such as another project's default 543xx stack, or this project's own containers.
+
+See [Supabase](#supabase) for applying the migration and the auth config to the hosted project.
 
 Other scripts: `npm run check` (svelte-check), `npm test` (vitest).
 
