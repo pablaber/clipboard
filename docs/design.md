@@ -103,10 +103,10 @@ src/
     login/+page.server.ts      actions: send (signInWithOtp), verify (verifyOtp → cookies → redirect /)
     login/+page.svelte         step 1 email, step 2 6-digit code
     logout/+page.server.ts     action: auth.signOut() → redirect /
-wrangler.jsonc                 main/assets per adapter docs, nodejs_als flag, ratelimits binding, SUPABASE_URL var
+wrangler.jsonc                 main/assets per adapter docs, nodejs_als flag, ratelimits binding (no vars; env arrives as deploy-time secrets)
 ```
 
-Env: `SUPABASE_URL` (var) and `SUPABASE_SECRET_KEY` (`wrangler secret put`). Locally these go in `.dev.vars` / `.env`, both gitignored.
+Env: `SUPABASE_URL` and `SUPABASE_SECRET_KEY`, both uploaded as Worker secrets by the release job. Locally these go in `.dev.vars` / `.env`, both gitignored.
 
 ---
 
@@ -114,17 +114,15 @@ Env: `SUPABASE_URL` (var) and `SUPABASE_SECRET_KEY` (`wrangler secret put`). Loc
 
 1. **Scaffold.** `npx sv create` (minimal, TS) and add `@sveltejs/adapter-cloudflare`, `@supabase/supabase-js`, `@supabase/ssr`, `wrangler`. Add `wrangler.jsonc` and `.gitignore` entries. Commit `docs/design.md` (this document).
 2. **Supabase project.**
-   - Create the project and run the migration (Supabase CLI `supabase db push`, or the SQL editor).
-   - Auth → Email: add `{{ .Token }}` to the **Magic Link** and **Confirm signup** templates. Set OTP length to 6.
-   - Auth → Rate Limits: enable IP forwarding.
-   - Auth → SMTP: Resend credentials (needs a verified sending domain).
+   - Create the project, then `npx supabase link --project-ref <ref>` and `npm run db:push` to run the migration.
+   - Auth settings live in `supabase/config.toml` (6-digit OTP, `{{ .Token }}` templates in `supabase/templates/login_code.html`, Resend SMTP under `[remotes.production]`). Apply with `npm run config:push` (see README for the env vars).
+   - Auth → Rate Limits: enable IP forwarding (one-time; not expressible in `config.toml`).
 3. **Server libs.** `supabase.ts`, `clips.ts`, `ratelimit.ts`, `code.ts`, `hooks.server.ts`, `app.d.ts`.
 4. **Clip flow.** Home page create action, `[code]` route, `open` redirect, copy-to-clipboard button.
 5. **Auth flow.** Login (send/verify), logout, user in layout, "Your clips" list with delete, TTL select, refetch on focus.
 6. **Polish.** Minimal CSS, mobile-friendly large code display, error states (404 "expired or not found", 429 "slow down").
 7. **Deploy.**
-   - `wrangler secret put SUPABASE_SECRET_KEY`, then `npm run build && npx wrangler deploy`.
-   - Optionally connect the GitHub repo with Workers Builds for deploy-on-push, and attach a custom domain.
+   - Deploys only through the release pipeline: Release Please opens a release PR, and merging it migrates the DB, pushes the Supabase config, and runs `wrangler deploy --domain` with `SUPABASE_URL` and `SUPABASE_SECRET_KEY` uploaded as Worker secrets. See README "Releasing to production".
 
 ---
 
