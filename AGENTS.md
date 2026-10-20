@@ -2,8 +2,10 @@
 
 Working conventions for automated agents and new contributors. `README.md` is the
 user-facing documentation (local setup, release setup, required repo variables and
-secrets, Supabase auth config); `docs/design.md` is the original design and plan. This file
-covers how to work in the repo without re-reading all of it, and the traps already hit.
+secrets, Supabase auth config); `docs/design.md` is the original design and plan;
+[`docs/style-guide.md`](docs/style-guide.md) is the visual style guide (tokens, components,
+icons) and is required reading before any UI change. This file covers how to work in the
+repo without re-reading all of it, and the traps already hit.
 
 ## What this is
 
@@ -55,13 +57,15 @@ production for a routine change (see Releases). There is no lint or format step 
 | `src/hooks.server.ts`         | per-request auth client, `locals.user` from `getClaims()`, applies auth cache headers           |
 | `src/app.d.ts`                | `Locals` (`auth`, `user`) and `Platform.env` (`LIMITER`, `SUPABASE_*`) types                    |
 | `src/lib/*.ts`                | pure, browser-safe helpers: `code`, `email` (incl. OTP), `time` (each with a `.test.ts`)        |
-| `src/lib/CopyButton.svelte`   | the only shared component; renders nothing without `navigator.clipboard`                        |
+| `src/lib/CopyButton.svelte`   | the only shared component; renders nothing without `navigator.clipboard`; `primary` prop        |
+| `src/lib/icons.ts`            | the icon vocabulary: Lucide icons re-exported under semantic names (`CopyIcon`, `DeleteIcon`)   |
+| `src/app.css`                 | theme tokens (`--color-*`, `--font-*`, ...), element defaults, shared classes (`.card`, ...)    |
 | `src/params/code.ts`          | `code` route matcher: exactly 8 digits                                                          |
 | `src/routes/+page.*`          | home: create/delete actions, code form, "Your clips"                                            |
 | `src/routes/[code=code]/`     | clip page: rate-limited lookup, 404 if expired or missing                                       |
 | `src/routes/open/`, `logout/` | redirect-only routes (`+page.server.ts` load plus stub `+page.svelte`)                          |
 | `src/routes/login/`           | `send` and `verify` actions (email OTP)                                                         |
-| `src/routes/+layout.svelte`   | header and the shared global CSS (`.card`, `.error`, `.muted`, `.row`)                          |
+| `src/routes/+layout.svelte`   | header; imports the self-hosted fonts and `app.css`                                             |
 | `src/routes/+error.svelte`    | one error page for 400/404/429/other                                                            |
 | `supabase/migrations/`        | numbered SQL migrations (`0001_clips.sql`)                                                      |
 | `supabase/config.toml`        | local profile (root) plus `[remotes.production]` overrides                                      |
@@ -188,8 +192,11 @@ production for a routine change (see Releases). There is no lint or format step 
 - TypeScript strict, tabs, single quotes. Match surrounding files (no formatter is wired up yet).
 - Svelte 5 runes only: `$props()`, `$state`, `$derived`, `$effect`. No legacy `export let` or
   stores.
-- Plain CSS. Shared styles are `:global` rules in `+layout.svelte`; page-specific styles go in
-  the page's `<style>`. No CSS framework.
+- Plain CSS, no CSS framework. Follow [`docs/style-guide.md`](docs/style-guide.md): tokens and
+  shared classes live in `src/app.css`, page-specific layout in the page's `<style>`, and no
+  hex colours outside `app.css`. Update the guide when you add a shared class or token.
+- Icons are Lucide, imported only from `$lib/icons` (never `@lucide/svelte` directly). Add new
+  ones there under a semantic name and list them in the style guide.
 - Use SvelteKit's generated `./$types` for loads and actions.
 - Form actions return `fail(status, { ... })` for user errors; unexpected failures throw
   `Error`, which renders `+error.svelte`. Throw `ClipValidationError` for rejected clip

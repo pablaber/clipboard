@@ -1,0 +1,254 @@
+/*
+ * Global theme ("Bold Pop"). Tokens first, then element defaults, then the shared classes.
+ * docs/style-guide.md explains when to use each token and class; keep the two in sync.
+ */
+
+:root {
+	color-scheme: light;
+
+	/* Colour */
+	--color-ink: #000;
+	--color-paper: #fff;
+	--color-muted: #3d3d3d;
+	--color-sunken: #f1f1f1;
+	--color-pink: #ff90e8;
+	--color-yellow: #ffc900;
+	--color-blue: #90a8ed;
+	--color-teal: #23a094;
+	--color-danger: #d4130b;
+
+	/* Type */
+	--font-sans: 'Archivo Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+	--font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+	/* Shape */
+	--border: 2px solid var(--color-ink);
+	--radius: 4px;
+	--shadow: 4px 4px 0 var(--color-ink);
+	--shadow-sm: 3px 3px 0 var(--color-ink);
+
+	/* Layout */
+	--content-width: 40rem;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+	font-family: var(--font-sans);
+	line-height: 1.5;
+	color: var(--color-ink);
+	background: var(--color-paper);
+}
+
+a {
+	color: inherit;
+	text-decoration-thickness: 2px;
+	text-underline-offset: 3px;
+}
+
+h1 {
+	font-size: clamp(1.9rem, 7vw, 2.3rem);
+	font-weight: 900;
+	letter-spacing: -0.04em;
+	line-height: 1.1;
+	margin: 0 0 1.25rem;
+}
+
+h2 {
+	font-size: 1.1rem;
+	font-weight: 800;
+	margin: 0 0 0.75rem;
+}
+
+:focus-visible {
+	outline: 3px solid var(--color-ink);
+	outline-offset: 2px;
+}
+
+/* Icons: every Lucide icon renders with this class. Size follows the surrounding text. */
+.lucide-icon {
+	width: 1.15em;
+	height: 1.15em;
+	stroke-width: 2.25;
+	flex: none;
+}
+
+/* Form controls */
+textarea,
+input[type='text'],
+select {
+	font: inherit;
+	color: inherit;
+	background: var(--color-paper);
+	border: var(--border);
+	border-radius: var(--radius);
+}
+
+textarea,
+input[type='text'] {
+	width: 100%;
+	padding: 0.6rem 0.75rem;
+}
+
+textarea {
+	min-height: 10rem;
+	resize: vertical;
+	font-family: var(--font-mono);
+	font-size: 0.92rem;
+}
+
+select {
+	padding: 0.2rem 0.4rem;
+}
+
+/* Buttons: pink primary by default; .secondary is white, .ghost has no chrome. */
+button {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font: inherit;
+	font-weight: 700;
+	padding: 0.5rem 0.9rem;
+	border: var(--border);
+	border-radius: var(--radius);
+	background: var(--color-pink);
+	color: var(--color-ink);
+	box-shadow: var(--shadow-sm);
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+	transform: translate(-1px, -1px);
+	box-shadow: 4px 4px 0 var(--color-ink);
+}
+
+button:active:not(:disabled) {
+	transform: translate(3px, 3px);
+	box-shadow: none;
+}
+
+button.secondary {
+	background: var(--color-paper);
+}
+
+button.ghost {
+	background: transparent;
+	border-color: transparent;
+	box-shadow: none;
+	transform: none;
+}
+
+button.ghost:hover:not(:disabled) {
+	color: var(--color-danger);
+	box-shadow: none;
+}
+
+button.icon-only {
+	padding: 0.5rem;
+}
+
+button.success {
+	background: var(--color-teal);
+}
+
+button:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
+/* Cards: white by default; a tone class gives a section its colour role (see the style guide). */
+.card {
+	background: var(--color-paper);
+	border: var(--border);
+	border-radius: var(--radius);
+	box-shadow: var(--shadow);
+	padding: 1.25rem;
+	margin: 1.25rem 0;
+}
+
+.card.tone-yellow {
+	background: var(--color-yellow);
+}
+
+.card.tone-blue {
+	background: var(--color-blue);
+}
+
+.card.tone-sunken {
+	background: var(--color-sunken);
+}
+
+/* Clip codes: .code is the large display, .code-tag the small pink label in lists. */
+.code {
+	font-weight: 900;
+	font-size: clamp(2.6rem, 11vw, 3.4rem);
+	letter-spacing: -0.01em;
+	line-height: 1.05;
+	font-variant-numeric: tabular-nums;
+	margin: 0 0 1rem;
+}
+
+.code-tag {
+	display: inline-block;
+	font-weight: 900;
+	font-variant-numeric: tabular-nums;
+	text-decoration: none;
+	background: var(--color-pink);
+	border: var(--border);
+	border-radius: var(--radius);
+	padding: 0 0.4rem;
+}
+
+.code-tag:hover {
+	box-shadow: var(--shadow-sm);
+}
+
+/* Text helpers */
+.muted {
+	color: var(--color-muted);
+	font-size: 0.9rem;
+}
+
+.with-icon {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+.error {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	color: var(--color-danger);
+	font-weight: 600;
+	margin: 0.5rem 0;
+}
+
+.row {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.sr {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	button:hover:not(:disabled),
+	button:active:not(:disabled) {
+		transform: none;
+	}
+}

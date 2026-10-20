@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { BackIcon, ErrorIcon, LogInIcon, MailIcon, SendIcon } from '$lib/icons';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
 	let { form } = $props();
@@ -23,7 +24,7 @@
 
 {#if form?.step === 'verify'}
 	<form method="POST" action="?/verify" use:enhance={enhanceForm}>
-		<p>Sent a code to <strong>{form.email}</strong></p>
+		<p class="with-icon sent"><MailIcon /><span>Sent a code to <strong>{form.email}</strong></span></p>
 		<input type="hidden" name="email" value={form.email} />
 		<label class="sr" for="token">6-digit code</label>
 		<input
@@ -38,11 +39,11 @@
 			required
 		/>
 		{#if form.error}
-			<p class="error" role="alert">{form.error}</p>
+			<p class="error" role="alert"><ErrorIcon />{form.error}</p>
 		{/if}
 		<div class="row actions">
-			<button type="submit" disabled={busy}>{busy ? 'Checking…' : 'Log in'}</button>
-			<a href="/login" data-sveltekit-reload>Use a different email</a>
+			<button type="submit" disabled={busy}><LogInIcon />{busy ? 'Checking…' : 'Log in'}</button>
+			<a class="with-icon" href="/login" data-sveltekit-reload><BackIcon />Use a different email</a>
 		</div>
 	</form>
 {:else}
@@ -60,23 +61,26 @@
 			required
 		/>
 		{#if form?.error}
-			<p class="error" role="alert">{form.error}</p>
+			<p class="error" role="alert"><ErrorIcon />{form.error}</p>
 		{/if}
 		<div class="row actions">
-			<button type="submit" disabled={busy}>{busy ? 'Sending…' : 'Send code'}</button>
+			<button type="submit" disabled={busy}><SendIcon />{busy ? 'Sending…' : 'Send code'}</button>
 		</div>
 	</form>
 {/if}
 
 <style>
-	.sr {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-	}
 	.actions {
-		margin-top: 0.75rem;
+		margin-top: 0.9rem;
+	}
+	.sent {
+		align-items: flex-start;
+	}
+	.sent :global(.lucide-icon) {
+		margin-top: 0.2em;
+	}
+	#token {
+		font-family: var(--font-mono);
+		letter-spacing: 0.1em;
 	}
 </style>
