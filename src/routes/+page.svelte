@@ -37,6 +37,23 @@
 	};
 
 	let saving = $state(false);
+
+	// ⌘/Ctrl+Enter in the textarea saves. requestSubmit runs validation and goes through enhance,
+	// but ignores the button's disabled state, so guard on saving to avoid double submits.
+	function saveOnModEnter(event: KeyboardEvent & { currentTarget: HTMLTextAreaElement }) {
+		if (event.key !== 'Enter' || !(event.metaKey || event.ctrlKey) || event.isComposing) return;
+		event.preventDefault();
+		if (!saving) event.currentTarget.form?.requestSubmit();
+	}
+
+	// Set after mount so the server render and hydration match; no JS means no shortcut hint.
+	let modKey = $state<string | null>(null);
+	$effect(() => {
+		const nav = navigator as Navigator & { userAgentData?: { platform: string } };
+		const platform = nav.userAgentData?.platform ?? navigator.platform;
+		modKey = /mac|iphone|ipad/i.test(platform) ? '⌘' : 'Ctrl';
+	});
+
 	const created = $derived(
 		form?.code && form.expiresAt ? { code: form.code, expiresAt: form.expiresAt } : null
 	);
@@ -57,14 +74,22 @@
 	}}
 >
 	<label class="sr" for="content">Text to share</label>
-	<textarea id="content" name="content" placeholder="Paste text here" required
-		>{form?.content ?? ''}</textarea
+	<textarea
+		id="content"
+		name="content"
+		placeholder="Paste text here"
+		required
+		aria-keyshortcuts="Meta+Enter Control+Enter"
+		onkeydown={saveOnModEnter}>{form?.content ?? ''}</textarea
 	>
 	{#if form?.error}
 		<p class="error" role="alert"><ErrorIcon />{form.error}</p>
 	{/if}
 	<div class="row actions">
-		<button type="submit" disabled={saving}><SaveIcon />{saving ? 'Saving…' : 'Save'}</button>
+		<button type="submit" disabled={saving}>
+			<SaveIcon />{saving ? 'Saving…' : 'Save'}
+			{#if modKey}<kbd class="shortcut" aria-hidden="true">{modKey} ↵</kbd>{/if}
+		</button>
 		{#if data.user}
 			<label class="muted with-icon">
 				<KeepForIcon />Keep for

@@ -162,6 +162,23 @@ button:disabled {
 	cursor: default;
 }
 
+/* Keyboard shortcut hint, e.g. trailing "⌘ ↵" in a button. Hidden without a physical keyboard. */
+kbd {
+	font-family: var(--font-mono);
+	font-size: 0.75em;
+	font-weight: 500;
+	padding: 0 0.3em;
+	border: 1px solid currentColor;
+	border-radius: var(--radius);
+	opacity: 0.7;
+}
+
+@media not ((hover: hover) and (pointer: fine)) {
+	kbd.shortcut {
+		display: none;
+	}
+}
+
 /* Cards: white by default; a tone class gives a section its colour role (see the style guide). */
 .card {
 	background: var(--color-paper);

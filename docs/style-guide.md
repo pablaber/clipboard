@@ -93,6 +93,9 @@ Rules:
 - Buttons lift on hover and press into their shadow on `:active`; don't add other hover
   effects. Disabled buttons fade to 60%.
 - Busy states change the label ("Saving…") and set `disabled`.
+- A button with a keyboard shortcut shows it in a trailing `<kbd class="shortcut">` (e.g.
+  "Save ⌘ ↵"), rendered client-side only and `aria-hidden`, with `aria-keyshortcuts` on the
+  control that owns the shortcut. `.shortcut` hints hide on devices without a fine pointer.
 - Keep `<button>` for actions and `<a>` for navigation, even when they look alike.
 
 ### Cards
