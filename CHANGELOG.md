@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/pablaber/clipboard/compare/v0.1.0...v0.2.0) (2026-10-20)
+
+
+### Features
+
+* bold pop theme, lucide icons and style guide ([#12](https://github.com/pablaber/clipboard/issues/12)) ([e4ddb13](https://github.com/pablaber/clipboard/commit/e4ddb130c621dc32e0adef48bad09224083e14ff))
+
 ## 0.1.0 (2026-10-18)
 
 
