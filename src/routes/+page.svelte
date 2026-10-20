@@ -2,6 +2,7 @@
 	import { applyAction, enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
+	import CodeForm from '$lib/CodeForm.svelte';
 	import CopyButton from '$lib/CopyButton.svelte';
 	import { formatCode } from '$lib/code';
 	import {
@@ -10,7 +11,6 @@
 		ExpiresIcon,
 		KeepForIcon,
 		LinkIcon,
-		OpenIcon,
 		SaveIcon,
 		TimeLeftIcon,
 		WarningIcon
@@ -123,19 +123,7 @@
 
 <section class="card tone-blue">
 	<h2>Have a code?</h2>
-	<form method="GET" action="/open" class="row">
-		<label class="sr" for="code">Code</label>
-		<input
-			id="code"
-			type="text"
-			name="code"
-			inputmode="numeric"
-			autocomplete="off"
-			placeholder="1234 5678"
-			required
-		/>
-		<button type="submit">Open<OpenIcon /></button>
-	</form>
+	<CodeForm />
 </section>
 
 {#if data.user}
@@ -216,10 +204,5 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-	.row input {
-		flex: 1;
-		min-width: 8rem;
-		width: auto;
 	}
 </style>
