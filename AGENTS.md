@@ -57,13 +57,15 @@ production for a routine change (see Releases). There is no lint or format step 
 | `src/hooks.server.ts`         | per-request auth client, `locals.user` from `getClaims()`, applies auth cache headers           |
 | `src/app.d.ts`                | `Locals` (`auth`, `user`) and `Platform.env` (`LIMITER`, `SUPABASE_*`) types                    |
 | `src/lib/*.ts`                | pure, browser-safe helpers: `code`, `email` (incl. OTP), `time` (each with a `.test.ts`)        |
-| `src/lib/CopyButton.svelte`   | the only shared component; renders nothing without `navigator.clipboard`; `primary` prop        |
+| `src/lib/CopyButton.svelte`   | shared copy button; renders nothing without `navigator.clipboard`; `primary` prop               |
+| `src/lib/CodeForm.svelte`     | shared "open by code" GET form (home card and `/code`); `autofocus`, `value`, `error` props     |
 | `src/lib/icons.ts`            | the icon vocabulary: Lucide icons re-exported under semantic names (`CopyIcon`, `DeleteIcon`)   |
 | `src/app.css`                 | theme tokens (`--color-*`, `--font-*`, ...), element defaults, shared classes (`.card`, ...)    |
 | `src/params/code.ts`          | `code` route matcher: exactly 8 digits                                                          |
 | `src/routes/+page.*`          | home: create/delete actions, code form, "Your clips"                                            |
 | `src/routes/[code=code]/`     | clip page: rate-limited lookup, 404 if expired or missing                                       |
-| `src/routes/open/`, `logout/` | redirect-only routes (`+page.server.ts` load plus stub `+page.svelte`)                          |
+| `src/routes/code/`            | open by code: autofocused input; `?code=` redirects to the clip or shows an inline error        |
+| `src/routes/open/`, `logout/` | redirect-only routes (`+page.server.ts` load plus stub `+page.svelte`); `/open` is legacy -> `/code` |
 | `src/routes/login/`           | `send` and `verify` actions (email OTP)                                                         |
 | `src/routes/+layout.svelte`   | header; imports the self-hosted fonts and `app.css`                                             |
 | `src/routes/+error.svelte`    | one error page for 400/404/429/other                                                            |
@@ -110,8 +112,8 @@ production for a routine change (see Releases). There is no lint or format step 
   `await limit(event, '<action>')` first. Current actions: `lookup`, `create`, `login-send`,
   `login-verify`; the key is `<action>:<client IP>`, 20 per 60 s from `wrangler.jsonc`, and it
   throws a 429. Why: 8 digits is guessable without it. The binding is absent under `vite dev`
-  so `limit` is a no-op there; use `npm run preview` to exercise it. `delete` (requires login)
-  and the redirect-only `/open` are not limited.
+  so `limit` is a no-op there; use `npm run preview` to exercise it. `delete` (requires login),
+  `/code` (no DB access, it only redirects) and the legacy `/open` are not limited.
 - **Auth client uses the SECRET key plus `Sb-Forwarded-For: <client IP>`.** Why: all Worker
   subrequests share Cloudflare egress IPs, so without it every user shares one Supabase Auth
   rate-limit bucket. IP forwarding is enabled once on the hosted project via the dashboard
@@ -130,7 +132,7 @@ production for a routine change (see Releases). There is no lint or format step 
   (see `[code=code]/+page.server.ts`); the logged-in home load sets `private, no-store`.
   `static/robots.txt` allows only `/`. A new route that shows clip data must do the same.
 - **Forms must work without JavaScript.** Use real `<form method>` plus a form action, then
-  add `use:enhance` progressively. The "Have a code?" form is a plain GET to `/open` for
+  add `use:enhance` progressively. The "Have a code?" form is a plain GET to `/code` for
   this reason. Do not move submission logic into client `fetch` calls.
 - **Text only, at most 100 KB.** Enforced twice: `validateContent` (UTF-8 bytes, not
   characters) and the table check `octet_length(content) between 1 and 100000`. Change both.

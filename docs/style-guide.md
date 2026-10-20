@@ -116,6 +116,8 @@ Lists and plain content stay white. Cards are not nested.
   per page beyond width and font family.
 - Every input has a `<label>`; use `.sr` when the label is visually redundant.
 - Errors use `<p class="error" role="alert"><ErrorIcon />…</p>` right below the field.
+- Only autofocus an input on a page whose single purpose is that input (`/code`), never on
+  pages with other content to read first.
 
 ### Layout and spacing
 

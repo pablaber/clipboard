@@ -1,9 +1,7 @@
-import { error, redirect } from '@sveltejs/kit';
-import { normalizeCode } from '$lib/code';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
+// Legacy form target; /code now handles opening by code.
 export const load: PageServerLoad = ({ url }) => {
-	const code = normalizeCode(url.searchParams.get('code') ?? '');
-	if (code.length !== 8) error(400, 'Codes are 8 digits');
-	redirect(303, `/${code}`);
+	redirect(308, `/code${url.search}`);
 };
