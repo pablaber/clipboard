@@ -1,5 +1,11 @@
 <script lang="ts">
-	let { text, label = 'Copy' }: { text: string; label?: string } = $props();
+	import { CopiedIcon, CopyIcon } from '$lib/icons';
+
+	let {
+		text,
+		label = 'Copy',
+		primary = false
+	}: { text: string; label?: string; primary?: boolean } = $props();
 
 	let supported = $state(false);
 	let copied = $state(false);
@@ -23,7 +29,12 @@
 </script>
 
 {#if supported}
-	<button type="button" class="secondary" onclick={copy} aria-live="polite">
-		{copied ? 'Copied!' : label}
+	<button
+		type="button"
+		class={{ secondary: !primary && !copied, success: copied }}
+		onclick={copy}
+		aria-live="polite"
+	>
+		{#if copied}<CopiedIcon />Copied!{:else}<CopyIcon />{label}{/if}
 	</button>
 {/if}

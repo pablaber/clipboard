@@ -4,6 +4,17 @@
 	import { page } from '$app/state';
 	import CopyButton from '$lib/CopyButton.svelte';
 	import { formatCode } from '$lib/code';
+	import {
+		DeleteIcon,
+		ErrorIcon,
+		ExpiresIcon,
+		KeepForIcon,
+		LinkIcon,
+		OpenIcon,
+		SaveIcon,
+		TimeLeftIcon,
+		WarningIcon
+	} from '$lib/icons';
 	import { expiresText, timeLeft } from '$lib/time';
 	import type { SubmitFunction } from '@sveltejs/kit';
 
@@ -50,13 +61,13 @@
 		>{form?.content ?? ''}</textarea
 	>
 	{#if form?.error}
-		<p class="error" role="alert">{form.error}</p>
+		<p class="error" role="alert"><ErrorIcon />{form.error}</p>
 	{/if}
 	<div class="row actions">
-		<button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+		<button type="submit" disabled={saving}><SaveIcon />{saving ? 'Saving…' : 'Save'}</button>
 		{#if data.user}
-			<label class="muted">
-				Keep for
+			<label class="muted with-icon">
+				<KeepForIcon />Keep for
 				<select name="ttl">
 					{#each data.ttl.options as option (option.ms)}
 						<option value={option.ms} selected={option.ms === data.ttl.default}>
@@ -66,26 +77,26 @@
 				</select>
 			</label>
 		{/if}
-		<span class="muted">Don't paste passwords or secrets.</span>
+		<span class="muted with-icon hint"><WarningIcon />Don't paste passwords or secrets.</span>
 	</div>
 </form>
 
 {#if created}
-	<section class="card" aria-live="polite">
+	<section class="card tone-yellow" aria-live="polite">
 		<h2>Your code</h2>
 		<p class="code">{formatCode(created.code)}</p>
 		<div class="row">
 			<CopyButton text={created.code} label="Copy code" />
-			<span class="muted">{expiresText(created.expiresAt)}</span>
+			<span class="with-icon"><ExpiresIcon />{expiresText(created.expiresAt)}</span>
 		</div>
 		<div class="row link">
-			<a href="/{created.code}">{link}</a>
+			<a class="with-icon" href="/{created.code}"><LinkIcon />{link}</a>
 			<CopyButton text={link} label="Copy link" />
 		</div>
 	</section>
 {/if}
 
-<section class="card">
+<section class="card tone-blue">
 	<h2>Have a code?</h2>
 	<form method="GET" action="/open" class="row">
 		<label class="sr" for="code">Code</label>
@@ -98,7 +109,7 @@
 			placeholder="1234 5678"
 			required
 		/>
-		<button type="submit">Open</button>
+		<button type="submit">Open<OpenIcon /></button>
 	</form>
 </section>
 
@@ -106,7 +117,7 @@
 	<section class="card">
 		<h2>Your clips</h2>
 		{#if form?.deleteError}
-			<p class="error" role="alert">{form.deleteError}</p>
+			<p class="error" role="alert"><ErrorIcon />{form.deleteError}</p>
 		{/if}
 		{#if data.clips.length === 0}
 			<p class="muted">No clips yet. Paste something above.</p>
@@ -115,13 +126,20 @@
 				{#each data.clips as clip (clip.code)}
 					<li>
 						<div class="info">
-							<a href="/{clip.code}">{formatCode(clip.code)}</a>
-							<span class="muted">{timeLeft(clip.expiresAt)}</span>
+							<a class="code-tag" href="/{clip.code}">{formatCode(clip.code)}</a>
+							<span class="muted with-icon"><TimeLeftIcon />{timeLeft(clip.expiresAt)}</span>
 							<span class="preview">{clip.preview}</span>
 						</div>
 						<form method="POST" action="?/delete" use:enhance={deleteClip}>
 							<input type="hidden" name="code" value={clip.code} />
-							<button type="submit" class="secondary">Delete</button>
+							<button
+								type="submit"
+								class="ghost icon-only"
+								aria-label="Delete {formatCode(clip.code)}"
+								title="Delete"
+							>
+								<DeleteIcon />
+							</button>
 						</form>
 					</li>
 				{/each}
@@ -131,25 +149,17 @@
 {/if}
 
 <style>
-	.sr {
-		position: absolute;
-		width: 1px;
-		height: 1px;
-		overflow: hidden;
-		clip-path: inset(50%);
-	}
 	.actions {
-		margin-top: 0.75rem;
+		margin-top: 0.9rem;
 	}
-	.code {
-		font-size: 2.5rem;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		font-variant-numeric: tabular-nums;
-		margin: 0.25rem 0 0.75rem;
+	@media (min-width: 40rem) {
+		.hint {
+			margin-left: auto;
+		}
 	}
 	.link {
-		margin-top: 0.75rem;
+		justify-content: space-between;
+		margin-top: 1rem;
 		word-break: break-all;
 	}
 	.clips {
@@ -162,16 +172,18 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 0.75rem;
-		padding: 0.5rem 0;
-		border-top: 1px solid #eee;
+		padding: 0.75rem 0;
+		border-top: var(--border);
 	}
 	.clips li:first-child {
 		border-top: 0;
+		padding-top: 0;
 	}
 	.info {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.25rem 0.75rem;
+		align-items: center;
+		gap: 0.35rem 0.75rem;
 		min-width: 0;
 	}
 	.preview {
