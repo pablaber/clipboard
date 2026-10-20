@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.0](https://github.com/pablaber/clipboard/compare/v0.2.0...v0.3.0) (2026-10-20)
+
+
+### Features
+
+* add dedicated open-by-code page ([#16](https://github.com/pablaber/clipboard/issues/16)) ([9fe7a99](https://github.com/pablaber/clipboard/commit/9fe7a99043d7db98e1aa9779033abaec56c08105))
+* save a clip with cmd/ctrl+enter ([#14](https://github.com/pablaber/clipboard/issues/14)) ([8fc99ee](https://github.com/pablaber/clipboard/commit/8fc99eebeabb0a7a62371a5bb88028337ca262b6))
+
 ## [0.2.0](https://github.com/pablaber/clipboard/compare/v0.1.0...v0.2.0) (2026-10-20)
 
 
