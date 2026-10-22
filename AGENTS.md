@@ -114,6 +114,12 @@ production for a routine change (see Releases). There is no lint or format step 
   throws a 429. Why: 8 digits is guessable without it. The binding is absent under `vite dev`
   so `limit` is a no-op there; use `npm run preview` to exercise it. `delete` (requires login),
   `/code` (no DB access, it only redirects) and the legacy `/open` are not limited.
+- **Anonymous saves are also capped at `ANON_CLIPS_PER_HOUR` (5) per client IP per rolling
+  hour.** The `LIMITER` binding only supports 10 s or 60 s periods, so this lives in Postgres:
+  the `clips_anon_limit` trigger (`0003_anon_clip_hourly_limit.sql`) counts anonymous rows by
+  `creator_ip_hash` (SHA-256 of the IP, never the raw address) under an advisory lock and raises
+  `P0429`, which `createClip` maps to `ClipLimitError` (a 429 form error). Change the constant and
+  the trigger together. Logged-in saves are not capped. Works under `vite dev` too.
 - **Auth client uses the SECRET key plus `Sb-Forwarded-For: <client IP>`.** Why: all Worker
   subrequests share Cloudflare egress IPs, so without it every user shares one Supabase Auth
   rate-limit bucket. IP forwarding is enabled once on the hosted project via the dashboard
