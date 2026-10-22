@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/pablaber/clipboard/compare/v0.3.0...v0.4.0) (2026-10-22)
+
+
+### Features
+
+* allow 1 MB clips for logged-in users ([#17](https://github.com/pablaber/clipboard/issues/17)) ([b0c6fec](https://github.com/pablaber/clipboard/commit/b0c6fecdaef6e1b89d776efa6565d4936869bfbf))
+
 ## [0.3.0](https://github.com/pablaber/clipboard/compare/v0.2.0...v0.3.0) (2026-10-20)
 
 
