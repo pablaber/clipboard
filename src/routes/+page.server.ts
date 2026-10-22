@@ -2,6 +2,7 @@ import { fail } from '@sveltejs/kit';
 import { normalizeCode } from '$lib/code';
 import {
 	ANON_TTL,
+	ClipLimitError,
 	ClipValidationError,
 	TTL_STEP,
 	USER_MAX_TTL,
@@ -37,12 +38,16 @@ export const actions: Actions = {
 			const { code, expiresAt } = await createClip({
 				content: text,
 				userId: event.locals.user?.id ?? null,
-				ttlMs: resolveTtl(event.locals.user, ttlFromForm)
+				ttlMs: resolveTtl(event.locals.user, ttlFromForm),
+				clientIp: event.getClientAddress()
 			});
 			return { code, expiresAt };
 		} catch (err) {
 			if (err instanceof ClipValidationError) {
 				return fail(400, { error: err.message, content: text });
+			}
+			if (err instanceof ClipLimitError) {
+				return fail(429, { error: err.message, content: text });
 			}
 			throw err;
 		}

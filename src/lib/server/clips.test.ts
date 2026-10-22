@@ -11,6 +11,7 @@ import {
 	TTL_STEP,
 	byteLength,
 	generateCode,
+	hashIp,
 	resolveTtl,
 	validateContent
 } from './clips';
@@ -120,5 +121,14 @@ describe('content validation', () => {
 		expect(chars).toBeLessThan(ANON_MAX_BYTES);
 		expect(validateContent('é'.repeat(chars), false)).not.toBeNull();
 		expect(validateContent('é'.repeat(ANON_MAX_BYTES / 2), false)).toBeNull();
+	});
+});
+
+describe('hashIp', () => {
+	it('returns a stable hex SHA-256 that does not contain the IP', async () => {
+		const hash = await hashIp('203.0.113.7');
+		expect(hash).toMatch(/^[0-9a-f]{64}$/);
+		expect(hash).toBe(await hashIp('203.0.113.7'));
+		expect(hash).not.toBe(await hashIp('203.0.113.8'));
 	});
 });

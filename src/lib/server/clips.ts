@@ -5,12 +5,15 @@ export const USER_MAX_TTL = 24 * 60 * 60 * 1000; // 1 day
 export const TTL_STEP = 60 * 60 * 1000; // logged-in users pick whole hours
 export const ANON_MAX_BYTES = 100_000; // 100 KB
 export const USER_MAX_BYTES = 1_000_000; // 1 MB
+export const ANON_CLIPS_PER_HOUR = 5; // per client IP; also enforced by the clips_anon_limit trigger
 
 const MAX_INSERT_TRIES = 5;
 const PREVIEW_LENGTH = 80;
 const UNIQUE_VIOLATION = '23505';
+const ANON_LIMIT_REACHED = 'P0429'; // raised by enforce_anon_clip_limit()
 
 export class ClipValidationError extends Error {}
+export class ClipLimitError extends Error {}
 
 // ---- pure helpers (no Supabase) ----
 
@@ -63,26 +66,41 @@ export function validateContent(content: string, loggedIn: boolean): string | nu
 	return `Clip is too large (max ${anon}, or ${user} when logged in)`;
 }
 
+/** Hex SHA-256 of the client IP, so anonymous rate limiting never stores the raw address. */
+export async function hashIp(ip: string): Promise<string> {
+	const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(ip));
+	return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
+}
+
 // ---- database ----
 
 export async function createClip(input: {
 	content: string;
 	userId: string | null;
 	ttlMs: number;
+	/** Client IP; counts toward ANON_CLIPS_PER_HOUR when userId is null. */
+	clientIp: string;
 }): Promise<{ code: string; expiresAt: string }> {
 	const invalid = validateContent(input.content, input.userId !== null);
 	if (invalid) throw new ClipValidationError(invalid);
 
 	const expiresAt = new Date(Date.now() + input.ttlMs).toISOString();
+	const creatorIpHash = input.userId === null ? await hashIp(input.clientIp) : null;
 	for (let attempt = 0; attempt < MAX_INSERT_TRIES; attempt++) {
 		const code = generateCode();
 		const { error } = await db().from('clips').insert({
 			code,
 			content: input.content,
 			user_id: input.userId,
+			creator_ip_hash: creatorIpHash,
 			expires_at: expiresAt
 		});
 		if (!error) return { code, expiresAt };
+		if (error.code === ANON_LIMIT_REACHED) {
+			throw new ClipLimitError(
+				`You can save ${ANON_CLIPS_PER_HOUR} clips an hour without logging in. Log in to save more.`
+			);
+		}
 		if (error.code !== UNIQUE_VIOLATION) throw new Error(`Failed to save clip: ${error.message}`);
 	}
 	throw new Error('Failed to save clip: could not find a free code');
