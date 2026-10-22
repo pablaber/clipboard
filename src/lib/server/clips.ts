@@ -2,7 +2,8 @@ import { db } from './supabase';
 
 export const ANON_TTL = 60 * 60 * 1000; // 1 hour
 export const USER_MAX_TTL = 24 * 60 * 60 * 1000; // 1 day
-export const MAX_BYTES = 100_000;
+export const ANON_MAX_BYTES = 100_000; // 100 KB
+export const USER_MAX_BYTES = 1_000_000; // 1 MB
 
 const MAX_INSERT_TRIES = 5;
 const PREVIEW_LENGTH = 80;
@@ -37,12 +38,27 @@ export function byteLength(text: string): number {
 	return new TextEncoder().encode(text).length;
 }
 
-/** Returns an error message, or null if the content is acceptable (1..MAX_BYTES UTF-8 bytes). */
-export function validateContent(content: string): string | null {
+function maxBytes(loggedIn: boolean): number {
+	return loggedIn ? USER_MAX_BYTES : ANON_MAX_BYTES;
+}
+
+function formatBytes(bytes: number): string {
+	return bytes >= 1_000_000 ? `${bytes / 1_000_000} MB` : `${bytes / 1000} KB`;
+}
+
+/**
+ * Returns an error message, or null if the content is acceptable (1..maxBytes UTF-8 bytes).
+ * Anonymous clips that only a logged-in user could save get a hint to log in.
+ */
+export function validateContent(content: string, loggedIn: boolean): string | null {
 	const bytes = byteLength(content);
 	if (bytes < 1) return 'Clip is empty';
-	if (bytes > MAX_BYTES) return `Clip is too large (max ${MAX_BYTES / 1000} KB)`;
-	return null;
+	if (bytes <= maxBytes(loggedIn)) return null;
+	const anon = formatBytes(ANON_MAX_BYTES);
+	const user = formatBytes(USER_MAX_BYTES);
+	if (loggedIn) return `Clip is too large (max ${user})`;
+	if (bytes <= USER_MAX_BYTES) return `Clip is too large (max ${anon}). Log in to save up to ${user}.`;
+	return `Clip is too large (max ${anon}, or ${user} when logged in)`;
 }
 
 // ---- database ----
@@ -52,7 +68,7 @@ export async function createClip(input: {
 	userId: string | null;
 	ttlMs: number;
 }): Promise<{ code: string; expiresAt: string }> {
-	const invalid = validateContent(input.content);
+	const invalid = validateContent(input.content, input.userId !== null);
 	if (invalid) throw new ClipValidationError(invalid);
 
 	const expiresAt = new Date(Date.now() + input.ttlMs).toISOString();

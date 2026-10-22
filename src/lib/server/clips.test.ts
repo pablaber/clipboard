@@ -4,8 +4,9 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 vi.mock('$env/dynamic/private', () => ({ env: {} }));
 
 import {
+	ANON_MAX_BYTES,
 	ANON_TTL,
-	MAX_BYTES,
+	USER_MAX_BYTES,
 	USER_MAX_TTL,
 	byteLength,
 	generateCode,
@@ -77,18 +78,39 @@ describe('content validation', () => {
 	});
 
 	it('rejects empty content', () => {
-		expect(validateContent('')).not.toBeNull();
+		expect(validateContent('', false)).not.toBeNull();
+		expect(validateContent('', true)).not.toBeNull();
 	});
 
-	it('accepts exactly MAX_BYTES and rejects one more', () => {
-		expect(validateContent('a'.repeat(MAX_BYTES))).toBeNull();
-		expect(validateContent('a'.repeat(MAX_BYTES + 1))).not.toBeNull();
+	it('anonymous: accepts exactly ANON_MAX_BYTES and rejects one more', () => {
+		expect(validateContent('a'.repeat(ANON_MAX_BYTES), false)).toBeNull();
+		expect(validateContent('a'.repeat(ANON_MAX_BYTES + 1), false)).not.toBeNull();
+	});
+
+	it('logged in: accepts exactly USER_MAX_BYTES and rejects one more', () => {
+		expect(validateContent('a'.repeat(USER_MAX_BYTES), true)).toBeNull();
+		expect(validateContent('a'.repeat(USER_MAX_BYTES + 1), true)).toBe(
+			'Clip is too large (max 1 MB)'
+		);
+	});
+
+	it('anonymous: tells the user to log in when logging in would allow the clip', () => {
+		expect(validateContent('a'.repeat(ANON_MAX_BYTES + 1), false)).toBe(
+			'Clip is too large (max 100 KB). Log in to save up to 1 MB.'
+		);
+		expect(validateContent('a'.repeat(USER_MAX_BYTES), false)).toMatch(/Log in/);
+	});
+
+	it('anonymous: over the logged-in limit too, states both limits', () => {
+		expect(validateContent('a'.repeat(USER_MAX_BYTES + 1), false)).toBe(
+			'Clip is too large (max 100 KB, or 1 MB when logged in)'
+		);
 	});
 
 	it('rejects multi-byte text that is under the limit in characters but over in bytes', () => {
-		const chars = MAX_BYTES / 2 + 1; // 2 bytes each => MAX_BYTES + 2 bytes
-		expect(chars).toBeLessThan(MAX_BYTES);
-		expect(validateContent('é'.repeat(chars))).not.toBeNull();
-		expect(validateContent('é'.repeat(MAX_BYTES / 2))).toBeNull();
+		const chars = ANON_MAX_BYTES / 2 + 1; // 2 bytes each => ANON_MAX_BYTES + 2 bytes
+		expect(chars).toBeLessThan(ANON_MAX_BYTES);
+		expect(validateContent('é'.repeat(chars), false)).not.toBeNull();
+		expect(validateContent('é'.repeat(ANON_MAX_BYTES / 2), false)).toBeNull();
 	});
 });

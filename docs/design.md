@@ -47,7 +47,7 @@ Constraints: be as simple as possible, use Svelte, Cloudflare, and Supabase.
    - Send `Sb-Forwarded-For: <client IP>` from the auth client. This only works with a **secret** key, which fits decision 1.
 6. **"Saved sessions"** = Supabase refresh-token cookies set by `@supabase/ssr` on the server. They are long-lived, so a user stays logged in on each machine. When a logged‑in user creates a clip, `user_id` is set. The home page lists their unexpired clips and re-fetches on window focus (`invalidateAll` on `visibilitychange`), so a clip pasted on machine A appears on machine B without a manual refresh. No Realtime needed.
 7. **Limits and safety:**
-   - Text only, ≤100 KB (DB check plus server check).
+   - Text only, ≤100 KB anonymous or ≤1 MB logged in (DB check plus server check).
    - Responses with clip content get `Cache-Control: no-store`.
    - A small "don't paste secrets" note on the page.
    - Known trade-off: 10⁸ codes plus rate limiting is fine for casual use but is not secret-grade. Burn-after-read is a natural later addition.
