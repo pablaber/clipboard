@@ -80,7 +80,7 @@ production for a routine change (see Releases). There is no lint or format step 
 ## Where changes belong
 
 - **Clip rules live in `src/lib/server/clips.ts`, never in routes or components.** Codes,
-  TTLs (`ANON_TTL`, `USER_MAX_TTL`), size limit (`MAX_BYTES`), validation and ownership
+  TTLs (`ANON_TTL`, `USER_MAX_TTL`), size limits (`ANON_MAX_BYTES`, `USER_MAX_BYTES`), validation and ownership
   checks are there. Routes parse the form, call it, and shape the response. The home page
   receives the TTL options from its load function so the UI never hard-codes them.
 - **Keep pure logic Supabase-free.** Helpers that need no database (`generateCode`,
@@ -134,8 +134,9 @@ production for a routine change (see Releases). There is no lint or format step 
 - **Forms must work without JavaScript.** Use real `<form method>` plus a form action, then
   add `use:enhance` progressively. The "Have a code?" form is a plain GET to `/code` for
   this reason. Do not move submission logic into client `fetch` calls.
-- **Text only, at most 100 KB.** Enforced twice: `validateContent` (UTF-8 bytes, not
-  characters) and the table check `octet_length(content) between 1 and 100000`. Change both.
+- **Text only, at most 100 KB anonymous or 1 MB logged in.** Enforced twice:
+  `validateContent` (UTF-8 bytes, not characters) and the table check `clips_content_check`
+  (`0002_user_clip_size.sql`, keyed on `user_id is null`). Change both.
 - **The login code and the clip code are different things.** Login is a 6-digit Supabase
   email OTP (`otp_length = 6` in `config.toml`); clip codes are 8 digits. Keep them
   distinct, and keep the email template code-only (no links, `{{ .Token }}`).
