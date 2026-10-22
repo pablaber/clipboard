@@ -15,8 +15,9 @@
 		TimeLeftIcon,
 		WarningIcon
 	} from '$lib/icons';
-	import { expiresText, timeLeft } from '$lib/time';
+	import { durationText, expiresText, timeLeft, untilText } from '$lib/time';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import { untrack } from 'svelte';
 
 	let { data, form } = $props();
 
@@ -54,6 +55,18 @@
 		modKey = /mac|iphone|ipad/i.test(platform) ? '⌘' : 'Ctrl';
 	});
 
+	// Chosen lifetime in ms. Kept across saves, so several clips in a row get the same one.
+	let ttl = $state(untrack(() => data.ttl.default));
+
+	// The "until 3:44 PM" hint uses the browser's clock and time zone, so it only renders after
+	// mount. Tick so it stays right while the page is open.
+	let now = $state<number | null>(null);
+	$effect(() => {
+		now = Date.now();
+		const timer = setInterval(() => (now = Date.now()), 30_000);
+		return () => clearInterval(timer);
+	});
+
 	const created = $derived(
 		form?.code && form.expiresAt ? { code: form.code, expiresAt: form.expiresAt } : null
 	);
@@ -85,23 +98,34 @@
 	{#if form?.error}
 		<p class="error" role="alert"><ErrorIcon />{form.error}</p>
 	{/if}
+	{#if data.user}
+		<div class="keep-for">
+			<p class="with-icon">
+				<KeepForIcon /><label for="ttl">Keep for</label>
+				<strong>{durationText(ttl)}</strong>
+				{#if now !== null}<span class="muted">{untilText(now + ttl, now)}</span>{/if}
+			</p>
+			<input
+				id="ttl"
+				name="ttl"
+				type="range"
+				min={data.ttl.min}
+				max={data.ttl.max}
+				step={data.ttl.step}
+				bind:value={ttl}
+				defaultValue={ttl}
+				aria-valuetext={durationText(ttl)}
+			/>
+			<p class="range-ends muted" aria-hidden="true">
+				<span>{durationText(data.ttl.min)}</span><span>{durationText(data.ttl.max)}</span>
+			</p>
+		</div>
+	{/if}
 	<div class="row actions">
 		<button type="submit" disabled={saving}>
 			<SaveIcon />{saving ? 'Saving…' : 'Save'}
 			{#if modKey}<kbd class="shortcut" aria-hidden="true">{modKey} ↵</kbd>{/if}
 		</button>
-		{#if data.user}
-			<label class="muted with-icon">
-				<KeepForIcon />Keep for
-				<select name="ttl">
-					{#each data.ttl.options as option (option.ms)}
-						<option value={option.ms} selected={option.ms === data.ttl.default}>
-							{option.label}
-						</option>
-					{/each}
-				</select>
-			</label>
-		{/if}
 		<span class="muted with-icon hint"><WarningIcon />Don't paste passwords or secrets.</span>
 	</div>
 </form>
@@ -162,6 +186,20 @@
 {/if}
 
 <style>
+	.keep-for {
+		margin-top: 0.9rem;
+	}
+	.keep-for p {
+		flex-wrap: wrap;
+		margin: 0;
+	}
+	.keep-for input {
+		margin: 0.6rem 0 0.25rem;
+	}
+	.range-ends {
+		display: flex;
+		justify-content: space-between;
+	}
 	.actions {
 		margin-top: 0.9rem;
 	}

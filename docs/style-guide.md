@@ -114,6 +114,9 @@ Lists and plain content stay white. Cards are not nested.
 
 - Inputs, textareas and selects get the black outline from `app.css`; don't restyle them
   per page beyond width and font family.
+- Range sliders (`input[type='range']`, styled in `app.css`) are a sunken track with a pink
+  square thumb. Show the current value as text next to the label, set `aria-valuetext` to
+  that text, and label both ends of the track (see "Keep for" on the home page).
 - Every input has a `<label>`; use `.sr` when the label is visually redundant.
 - Errors use `<p class="error" role="alert"><ErrorIcon />…</p>` right below the field.
 - Only autofocus an input on a page whose single purpose is that input (`/code`), never on

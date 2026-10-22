@@ -11,7 +11,7 @@ repo without re-reading all of it, and the traps already hit.
 
 A minimal online clipboard: paste text, get an 8-digit code, open it on another machine.
 Anonymous clips expire after 1 hour. Users who log in with a 6-digit emailed code choose a
-1 hour or 1 day lifetime and see "Your clips" on any machine they are logged in on.
+lifetime of 1 to 24 whole hours (slider, default 1 day) and see "Your clips" on any machine they are logged in on.
 
 SvelteKit 2 + Svelte 5 (runes, plain CSS) on Cloudflare Workers with static assets,
 Supabase Postgres and Auth, Resend as Supabase's SMTP. Production:
@@ -80,9 +80,10 @@ production for a routine change (see Releases). There is no lint or format step 
 ## Where changes belong
 
 - **Clip rules live in `src/lib/server/clips.ts`, never in routes or components.** Codes,
-  TTLs (`ANON_TTL`, `USER_MAX_TTL`), size limits (`ANON_MAX_BYTES`, `USER_MAX_BYTES`), validation and ownership
+  TTLs (`ANON_TTL`, `USER_MAX_TTL`, `TTL_STEP`), size limits (`ANON_MAX_BYTES`, `USER_MAX_BYTES`), validation and ownership
   checks are there. Routes parse the form, call it, and shape the response. The home page
-  receives the TTL options from its load function so the UI never hard-codes them.
+  receives the TTL range (min, max, step, default) from its load function so the UI never
+  hard-codes it.
 - **Keep pure logic Supabase-free.** Helpers that need no database (`generateCode`,
   `resolveTtl`, `validateContent`) are exported and unit tested; put new pure logic the
   same way so it stays testable.

@@ -2,6 +2,7 @@ import { db } from './supabase';
 
 export const ANON_TTL = 60 * 60 * 1000; // 1 hour
 export const USER_MAX_TTL = 24 * 60 * 60 * 1000; // 1 day
+export const TTL_STEP = 60 * 60 * 1000; // logged-in users pick whole hours
 export const ANON_MAX_BYTES = 100_000; // 100 KB
 export const USER_MAX_BYTES = 1_000_000; // 1 MB
 
@@ -25,13 +26,14 @@ export function generateCode(): string {
 }
 
 /**
- * Anonymous clips always get ANON_TTL. Logged-in users choose between ANON_TTL and USER_MAX_TTL
- * (default USER_MAX_TTL); any other value snaps down to the largest valid choice not above it.
+ * Anonymous clips always get ANON_TTL. Logged-in users choose a whole number of hours from ANON_TTL
+ * to USER_MAX_TTL (default USER_MAX_TTL); other values round down to a whole hour, then clamp.
  */
 export function resolveTtl(user: { id: string } | null, requestedMs?: number): number {
 	if (!user) return ANON_TTL;
 	if (requestedMs === undefined || !Number.isFinite(requestedMs)) return USER_MAX_TTL;
-	return requestedMs >= USER_MAX_TTL ? USER_MAX_TTL : ANON_TTL;
+	const hours = Math.floor(requestedMs / TTL_STEP) * TTL_STEP;
+	return Math.min(USER_MAX_TTL, Math.max(ANON_TTL, hours));
 }
 
 export function byteLength(text: string): number {

@@ -3,6 +3,7 @@ import { normalizeCode } from '$lib/code';
 import {
 	ANON_TTL,
 	ClipValidationError,
+	TTL_STEP,
 	USER_MAX_TTL,
 	createClip,
 	deleteClip,
@@ -13,13 +14,7 @@ import { limit } from '$lib/server/ratelimit';
 import type { Actions, PageServerLoad } from './$types';
 
 // Passed to the page so it never hard-codes the TTL values.
-const ttl = {
-	options: [
-		{ ms: ANON_TTL, label: '1 hour' },
-		{ ms: USER_MAX_TTL, label: '1 day' }
-	],
-	default: USER_MAX_TTL
-};
+const ttl = { min: ANON_TTL, max: USER_MAX_TTL, step: TTL_STEP, default: USER_MAX_TTL };
 
 export const load: PageServerLoad = async ({ locals, setHeaders }) => {
 	if (!locals.user) return { clips: [], ttl };
