@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/pablaber/clipboard/compare/v0.4.0...v0.5.0) (2026-10-22)
+
+
+### Features
+
+* choose any number of hours for a clip ([#19](https://github.com/pablaber/clipboard/issues/19)) ([779944d](https://github.com/pablaber/clipboard/commit/779944d336ad643c454381f2a8f628c74d728aeb))
+* limit anonymous clips to 5 per hour ([#21](https://github.com/pablaber/clipboard/issues/21)) ([6081c7a](https://github.com/pablaber/clipboard/commit/6081c7a646f8d3096cb3f5a6000d65c0f5d66aa8))
+
 ## [0.4.0](https://github.com/pablaber/clipboard/compare/v0.3.0...v0.4.0) (2026-10-22)
 
 
