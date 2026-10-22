@@ -8,6 +8,7 @@ import {
 	ANON_TTL,
 	USER_MAX_BYTES,
 	USER_MAX_TTL,
+	TTL_STEP,
 	byteLength,
 	generateCode,
 	resolveTtl,
@@ -56,15 +57,22 @@ describe('resolveTtl', () => {
 		expect(resolveTtl(user, NaN)).toBe(USER_MAX_TTL);
 	});
 
-	it('honours the two valid choices', () => {
+	it('honours any whole number of hours from 1h to 1d', () => {
 		expect(resolveTtl(user, ANON_TTL)).toBe(ANON_TTL);
+		expect(resolveTtl(user, 6 * TTL_STEP)).toBe(6 * TTL_STEP);
+		expect(resolveTtl(user, 23 * TTL_STEP)).toBe(23 * TTL_STEP);
 		expect(resolveTtl(user, USER_MAX_TTL)).toBe(USER_MAX_TTL);
 	});
 
-	it('clamps to at most 1d and never exceeds the request', () => {
+	it('rounds down to a whole hour, never exceeding the request', () => {
+		expect(resolveTtl(user, 2 * TTL_STEP + 59 * 60_000)).toBe(2 * TTL_STEP);
+		expect(resolveTtl(user, USER_MAX_TTL - 1)).toBe(23 * TTL_STEP);
+	});
+
+	it('clamps to between 1h and 1d', () => {
 		expect(resolveTtl(user, USER_MAX_TTL * 7)).toBe(USER_MAX_TTL);
-		expect(resolveTtl(user, 2 * ANON_TTL)).toBe(ANON_TTL);
 		expect(resolveTtl(user, 1000)).toBe(ANON_TTL);
+		expect(resolveTtl(user, 0)).toBe(ANON_TTL);
 		expect(resolveTtl(user, -5)).toBe(ANON_TTL);
 	});
 });
