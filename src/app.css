@@ -181,8 +181,11 @@ button.ghost {
 }
 
 button.ghost:hover:not(:disabled) {
-	color: var(--color-danger);
 	box-shadow: none;
+}
+
+button.danger:hover:not(:disabled) {
+	color: var(--color-danger);
 }
 
 button.icon-only {

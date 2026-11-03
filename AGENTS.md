@@ -57,13 +57,14 @@ production for a routine change (see Releases). There is no lint or format step 
 | `src/hooks.server.ts`         | per-request auth client, `locals.user` from `getClaims()`, applies auth cache headers           |
 | `src/app.d.ts`                | `Locals` (`auth`, `user`) and `Platform.env` (`LIMITER`, `SUPABASE_*`) types                    |
 | `src/lib/*.ts`                | pure, browser-safe helpers: `code`, `email` (incl. OTP), `time` (each with a `.test.ts`)        |
-| `src/lib/CopyButton.svelte`   | shared copy button; renders nothing without `navigator.clipboard`; `primary` prop               |
+| `src/lib/CopyButton.svelte`   | shared copy button; renders nothing without `navigator.clipboard`; `primary`, `iconOnly` props; `text` may be an async getter |
 | `src/lib/CodeForm.svelte`     | shared "open by code" GET form (home card and `/code`); `autofocus`, `value`, `error` props     |
 | `src/lib/icons.ts`            | the icon vocabulary: Lucide icons re-exported under semantic names (`CopyIcon`, `DeleteIcon`)   |
 | `src/app.css`                 | theme tokens (`--color-*`, `--font-*`, ...), element defaults, shared classes (`.card`, ...)    |
 | `src/params/code.ts`          | `code` route matcher: exactly 8 digits                                                          |
 | `src/routes/+page.*`          | home: create/delete actions, code form, "Your clips"                                            |
 | `src/routes/[code=code]/`     | clip page: rate-limited lookup, 404 if expired or missing                                       |
+| `src/routes/[code=code]/raw/` | the clip's full text as `text/plain`; same lookup rate limit as the clip page; "Your clips" copy fetches it |
 | `src/routes/code/`            | open by code: autofocused input; `?code=` redirects to the clip or shows an inline error        |
 | `src/routes/open/`, `logout/` | redirect-only routes (`+page.server.ts` load plus stub `+page.svelte`); `/open` is legacy -> `/code` |
 | `src/routes/login/`           | `send` and `verify` actions (email OTP)                                                         |
@@ -224,7 +225,7 @@ production for a routine change (see Releases). There is no lint or format step 
 - There are no e2e tests yet (#9). Manual QA against the local stack: save in a normal
   window and open the code in incognito; open by code with spaces or dashes; the 404 page;
   about 25 rapid lookups give 429 on `npm run preview`; log in via Mailpit; "Your clips" in
-  two browsers (refreshes on window focus); delete; logout (other browser stays logged in).
+  two browsers (refreshes on window focus); copy from the list; delete; logout (other browser stays logged in).
 
 ## Pull requests
 
