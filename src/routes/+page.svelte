@@ -37,6 +37,13 @@
 		else await applyAction(result);
 	};
 
+	// The list only has previews, so the full text is fetched when Copy is clicked.
+	async function clipText(code: string) {
+		const response = await fetch(`/${code}/raw`);
+		if (!response.ok) throw new Error(`Failed to load clip: ${response.status}`);
+		return response.text();
+	}
+
 	let saving = $state(false);
 
 	// ⌘/Ctrl+Enter in the textarea saves. requestSubmit runs validation and goes through enhance,
@@ -167,17 +174,24 @@
 							<span class="muted with-icon"><TimeLeftIcon />{timeLeft(clip.expiresAt)}</span>
 							<span class="preview">{clip.preview}</span>
 						</div>
-						<form method="POST" action="?/delete" use:enhance={deleteClip}>
-							<input type="hidden" name="code" value={clip.code} />
-							<button
-								type="submit"
-								class="ghost icon-only"
-								aria-label="Delete {formatCode(clip.code)}"
-								title="Delete"
-							>
-								<DeleteIcon />
-							</button>
-						</form>
+						<div class="clip-actions">
+							<CopyButton
+								text={() => clipText(clip.code)}
+								label="Copy {formatCode(clip.code)}"
+								iconOnly
+							/>
+							<form method="POST" action="?/delete" use:enhance={deleteClip}>
+								<input type="hidden" name="code" value={clip.code} />
+								<button
+									type="submit"
+									class="ghost danger icon-only"
+									aria-label="Delete {formatCode(clip.code)}"
+									title="Delete"
+								>
+									<DeleteIcon />
+								</button>
+							</form>
+						</div>
 					</li>
 				{/each}
 			</ul>
@@ -236,6 +250,11 @@
 		align-items: center;
 		gap: 0.35rem 0.75rem;
 		min-width: 0;
+	}
+	.clip-actions {
+		display: flex;
+		flex-shrink: 0;
+		gap: 0.25rem;
 	}
 	.preview {
 		flex-basis: 100%;

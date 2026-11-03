@@ -86,7 +86,8 @@ Rules:
 | --------------------- | ----------------------------------- | ----------------------------------------------- |
 | _(none)_              | pink fill, outline, small shadow    | the main action of a form or page (one per group) |
 | `.secondary`          | white fill                          | other actions next to a primary (Copy code, Log out) |
-| `.ghost`              | no fill, border or shadow           | low-emphasis row actions (delete in a list)     |
+| `.ghost`              | no fill, border or shadow           | low-emphasis row actions (copy, delete in a list) |
+| `.danger`             | red text on hover                   | combine with `.ghost` for destructive actions   |
 | `.icon-only`          | square padding                      | combine with a variant when there is no label   |
 | `.success`            | teal fill                           | transient confirmation state only               |
 
