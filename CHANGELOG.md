@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/pablaber/clipboard/compare/v0.5.0...v0.6.0) (2026-11-03)
+
+
+### Features
+
+* add copy button to your clips list ([#22](https://github.com/pablaber/clipboard/issues/22)) ([bb20ef8](https://github.com/pablaber/clipboard/commit/bb20ef8c17e14c760b15e3dd073ad580e30f27e3))
+
 ## [0.5.0](https://github.com/pablaber/clipboard/compare/v0.4.0...v0.5.0) (2026-10-22)
 
 
